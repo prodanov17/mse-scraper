@@ -124,7 +124,14 @@ def retrieve_data_for_code(code):
     if os.path.exists(path):
         existing_df = pd.read_csv(path)
         if exists:
-            combined_df = pd.concat([new_df, existing_df], ignore_index=True)
+            if not new_df.empty and not existing_df.empty:
+                combined_df = pd.concat([new_df, existing_df], ignore_index=True)
+            elif not new_df.empty:
+                combined_df = new_df
+            elif not existing_df.empty:
+                combined_df = existing_df
+            else:
+                combined_df = pd.DataFrame()  # Handle the case where both are empty
             combined_df.to_csv(path, index=False)
     else:
         new_df.to_csv(path, index=False)
@@ -133,12 +140,12 @@ def retrieve_data_for_code(code):
 
 
 if __name__ == "__main__":
+    start_time = datetime.now()
     os.makedirs("storage", exist_ok=True)  # Ensure storage directory exists
     codes = get_symbols()
 
-    start_time = datetime.now()
     # with concurrent.futures.ThreadPoolExecutor() as executor:
-    with ProcessPoolExecutor(max_workers=16) as executor:
+    with ProcessPoolExecutor(max_workers=8) as executor:
         futures = {executor.submit(retrieve_data_for_code, code): code for code in codes}
         for future in concurrent.futures.as_completed(futures):
             code = futures[future]
