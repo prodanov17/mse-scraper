@@ -71,7 +71,7 @@ def process_data_frame(df):
         #10,000.00
         #10.000,00
 
-    df = df[df['Volume'] != 0]
+    df = df[df['Volume'] != '0']
 
     return df
 
@@ -96,6 +96,7 @@ def retrieve_data_for_code(code):
     latest_date = read_latest_date_from_csv(code)
 
     if latest_date is not None:
+        print(f"Latest date for {code} is {latest_date}")
         exists = True
         latest_date = datetime.strptime(latest_date, '%d.%m.%Y')
         start_date = latest_date + timedelta(days=1)
@@ -122,7 +123,7 @@ def retrieve_data_for_code(code):
 
     if os.path.exists(path):
         existing_df = pd.read_csv(path)
-        if not exists:
+        if exists:
             combined_df = pd.concat([new_df, existing_df], ignore_index=True)
             combined_df.to_csv(path, index=False)
     else:
