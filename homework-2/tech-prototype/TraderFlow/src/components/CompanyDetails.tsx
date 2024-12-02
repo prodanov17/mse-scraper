@@ -16,10 +16,19 @@ const CompanyDetails = () => {
     }
 
     // Fetch company details based on companyId from localhost:5000 API
-    fetch(`http://localhost:8080/api/companies/${companyId}`) // Update the URL here to use the local API
+    fetch(`http://localhost:8080/api/companies/${companyId}`) // API for company details
       .then(response => response.json())
       .then(data => {
         setCompanyDetails(data);
+        // Fetch stock price for the company
+        fetch(`http://localhost:8080/api/companies/${companyId}`)  // API for stock price
+          .then(response => response.json())
+          .then(stockData => {
+            setCompanyDetails(prevDetails => ({ ...prevDetails, price: stockData.price }));
+          })
+          .catch(err => {
+            setError('Failed to load stock price');
+          });
         setLoading(false); // Data has been loaded
       })
       .catch(err => {
@@ -66,7 +75,7 @@ const CompanyDetails = () => {
             <>
               <p className="text-xl mb-4">Details for company: {companyDetails.name}</p>
               <p className="text-lg">{companyDetails.short_name}</p>
-              <p className="text-lg">Price: ${companyDetails.price}</p>
+              <p className="text-lg">Price: ${companyDetails.price}</p> {/* Display the price */}
               {/* Add more company details as needed */}
             </>
           ) : (
