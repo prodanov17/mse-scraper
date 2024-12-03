@@ -1,7 +1,10 @@
 package com.example.mseapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -9,15 +12,13 @@ import java.util.List;
 @Data
 public class Company {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(nullable = false, unique = true) // Primary key with constraints
+    private String companyKey;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String shortName;
-
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CompanyPriceHistory> priceHistories;
+    @JsonManagedReference
+    @ToString.Exclude
+    private List<StockData> stockData;
 }

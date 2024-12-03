@@ -1,19 +1,16 @@
 package com.example.mseapi.service;
 
+import com.example.mseapi.dto.CompanyDTO;
+import com.example.mseapi.dto.StockDataDTO;
 import com.example.mseapi.model.Company;
-import com.example.mseapi.repository.CompanyRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
-@Service
-public class CompanyService {
-    @Autowired
-    private CompanyRepository repository;
+public interface CompanyService {
+    List<CompanyDTO> getAllCompanies();
+    CompanyDTO getCompanyById(String key);
 
-    public List<Company> getAllCompanies(){
-        return this.repository.findAll();
-    }
+    StockDataDTO getCompanyStockData(String key, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }
