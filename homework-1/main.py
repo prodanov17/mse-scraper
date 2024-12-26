@@ -77,7 +77,7 @@ def process_data_frame(df):
 
 
 def read_latest_date_from_csv(code): # filter 2
-    path = os.path.join("storage", f"{code}.csv")
+    path = os.path.join("../shared/storage", f"{code}.csv")
 
     if os.path.exists(path):
         with open(path, 'r') as f:
@@ -117,7 +117,7 @@ def retrieve_data_for_code(code):
             period_data = retrieve_data_for_period(code, start_date, end_date)
             all_data.extend(period_data)
 
-    path = os.path.join("storage", f"{code}.csv")
+    path = os.path.join("../shared/storage", f"{code}.csv")
     new_df = pd.DataFrame(all_data, columns=columns)
     new_df = process_data_frame(new_df)
 
@@ -141,7 +141,7 @@ def retrieve_data_for_code(code):
 
 if __name__ == "__main__":
     start_time = datetime.now()
-    os.makedirs("storage", exist_ok=True)  # Ensure storage directory exists
+    os.makedirs("../shared/storage", exist_ok=True)  # Ensure storage directory exists
     codes = get_symbols()
 
     # with concurrent.futures.ThreadPoolExecutor() as executor:
