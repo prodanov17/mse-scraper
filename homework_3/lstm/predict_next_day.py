@@ -1,4 +1,4 @@
-import sys
+from flask import Flask, request, jsonify
 import os
 import math
 import pandas as pd
@@ -6,15 +6,14 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 
-# Usage: python predict_next_day.py SYMBOL
-# Example: python predict_next_day.py AAPL
-
 # ---------------------------
 # Configuration
 # ---------------------------
 sequence_length = 60
 features = ['Close', 'RSI', 'Stoch_K', 'Stoch_D', 'WilliamsR', 'CCI', 'MFI', 'SMA', 'EMA', 'WMA']
 close_index = features.index('Close')
+
+app = Flask(__name__)
 
 def predict_next_day(symbol):
     model_path = f"models/{symbol}.h5"
@@ -44,7 +43,7 @@ def predict_next_day(symbol):
 
     data = df[features].values
 
-    scaler = MinMaxScaler(feature_range=(0,1))
+    scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data)
 
     last_sequence = scaled_data[-sequence_length:].reshape(1, sequence_length, len(features))
@@ -57,15 +56,21 @@ def predict_next_day(symbol):
 
     return predicted_price
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python predict_next_day.py SYMBOL")
-        sys.exit(1)
+@app.route('/predict', methods=['GET'])
+def predict():
+    symbol = request.args.get('symbol')
+    if not symbol:
+        return jsonify({"error": "Symbol parameter is required."}), 400
 
-    symbol = sys.argv[1]
     try:
         prediction = predict_next_day(symbol)
-        print(f"Predicted price for next day ({symbol}): {prediction}")
+        return jsonify({"symbol": symbol, "predicted_price": prediction}), 200
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+        return jsonify({"error": "An unexpected error occurred.", "details": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5002)

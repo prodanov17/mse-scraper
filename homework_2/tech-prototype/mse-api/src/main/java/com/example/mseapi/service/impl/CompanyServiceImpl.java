@@ -1,6 +1,7 @@
 package com.example.mseapi.service.impl;
 
 import com.example.mseapi.dto.CompanyDTO;
+import com.example.mseapi.dto.CompanyPredictionsDTO;
 import com.example.mseapi.dto.StockDataDTO;
 import com.example.mseapi.model.Company;
 import com.example.mseapi.model.StockData;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -75,7 +77,6 @@ public class CompanyServiceImpl implements CompanyService {
 
         return new CompanyDTO(company.get().getName(), company.get().getCompanyKey(), price, priceChange);
     }
-
 
     public StockDataDTO getCompanyStockData(String key, LocalDate startDate, LocalDate endDate, Pageable pageable){
         Optional<Company> company = this.repository.findById(key);

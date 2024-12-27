@@ -1,6 +1,7 @@
 package com.example.mseapi.service;
 
 import com.example.mseapi.dto.CompanyDTO;
+import com.example.mseapi.dto.CompanyPredictionsDTO;
 import com.example.mseapi.dto.StockDataDTO;
 import com.example.mseapi.model.Company;
 import org.springframework.data.domain.Pageable;

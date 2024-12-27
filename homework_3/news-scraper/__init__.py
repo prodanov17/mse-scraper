@@ -1,0 +1,1 @@
+from news_scraper import get_news_for_issuer
