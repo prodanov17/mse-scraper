@@ -44,7 +44,7 @@ public interface StockDataRepository extends JpaRepository<StockData, Long> {
     ON s.company_key = latest.company_key AND s.date = latest.latest_date
     WHERE s.company_key = :companyKey
 """, nativeQuery = true)
-    Object[] findLatestStockDataForAllCompanies(@Param("companyKey") String companyKey);
+    Object[] findLatestStockDataForCompany(@Param("companyKey") String companyKey);
 
 
 }

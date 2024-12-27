@@ -56,7 +56,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyDTO getCompanyById(String key) {
-        Object[] stockData = this.stockDataRepository.findLatestStockDataForAllCompanies(key);
+        Object[] stockData = this.stockDataRepository.findLatestStockDataForCompany(key);
 
         Double price = 0.0;
         Double priceChange = 0.0;
@@ -69,13 +69,9 @@ public class CompanyServiceImpl implements CompanyService {
             }
         }
 
-        Optional<Company> company = this.repository.findById(key);
+        Company company = this.repository.findById(key).orElseThrow(() -> new RuntimeException("Company not found"));
 
-        if (company.isEmpty()) {
-            throw new RuntimeException("Company not found");
-        }
-
-        return new CompanyDTO(company.get().getName(), company.get().getCompanyKey(), price, priceChange);
+        return new CompanyDTO(company.getName(), company.getCompanyKey(), price, priceChange);
     }
 
     public StockDataDTO getCompanyStockData(String key, LocalDate startDate, LocalDate endDate, Pageable pageable){
@@ -85,9 +81,14 @@ public class CompanyServiceImpl implements CompanyService {
 
         Page<StockData> stockData = this.stockDataRepository.findByCompanyCompanyKeyAndDateBetween(key, startDate, endDate, pageable);
 
+        Double price = 0.0;
+        if(!stockData.isEmpty())
+            price = stockData.getContent().get(0).getPrice();
+
         StockDataDTO dto = new StockDataDTO();
         dto.setCompanyKey(company.get().getCompanyKey());
         dto.setName(company.get().getName());
+        dto.setPrice(price);
         dto.setStockData(stockData);
 
         return dto;

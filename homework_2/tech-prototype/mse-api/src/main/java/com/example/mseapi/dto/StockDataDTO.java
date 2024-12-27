@@ -8,5 +8,6 @@ import org.springframework.data.domain.Page;
 public class StockDataDTO {
     private String companyKey;
     private String name;
+    private Double price;
     private Page<StockData> stockData;
 }

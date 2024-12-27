@@ -81,7 +81,7 @@ const HomePage: React.FC = () => {
                                     className={`text-xl font-medium ${darkMode ? 'text-blue-400 hover:text-blue-600' : 'text-blue-600 hover:text-blue-800'}`}
                                 >
                                     <div className="flex justify-between">
-                                        <span>{company.name}</span>
+                                        <span>{!company.name ? company.short_name : company.name}</span>
                                         <span className="text-sm text-gray-400">{company.short_name}</span>
                                     </div>
                                     <div className="text-lg mt-2">Stock Price: {company.price} MKD.</div> {/* Display stock price */}

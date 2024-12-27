@@ -5,6 +5,7 @@ import com.example.mseapi.dto.CompanyPredictionsDTO;
 import com.example.mseapi.dto.NewsSentimentDTO;
 import com.example.mseapi.dto.StockDataDTO;
 import com.example.mseapi.model.Company;
+import com.example.mseapi.service.CompanyService;
 import com.example.mseapi.service.NewsService;
 import com.example.mseapi.service.PredictionService;
 import com.example.mseapi.service.impl.CompanyServiceImpl;
@@ -21,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/companies")
 public class CompanyController {
     @Autowired
-    private CompanyServiceImpl service;
+    private CompanyService service;
 
     @Autowired
     private PredictionService predictionService;
