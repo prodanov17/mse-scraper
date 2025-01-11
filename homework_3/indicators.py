@@ -4,6 +4,7 @@ from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator
 from ta.trend import CCIIndicator, SMAIndicator, EMAIndicator, WMAIndicator
 from ta.volume import MFIIndicator
 
+# Function to read CSV files and format columns appropriately
 def read_csv(filename) -> pd.DataFrame:
     df = pd.read_csv(filename)
     df['Date'] = pd.to_datetime(df['Date'], format='%d.%m.%Y')
@@ -11,6 +12,7 @@ def read_csv(filename) -> pd.DataFrame:
     df = df.set_index('Date')
     return df
 
+# Function to convert price columns from strings to floats
 def infer_close_price(df: pd.DataFrame) -> pd.DataFrame:
     df['Last trade price'] = df['Last trade price'].apply(price_str_to_float)
     df['Close'] = df['Last trade price']
@@ -19,15 +21,18 @@ def infer_close_price(df: pd.DataFrame) -> pd.DataFrame:
     df['Volume'] = df['Volume'].apply(lambda x: float(str(x).replace('.', '').replace(',', '.')))
     return df
 
+# Helper function to convert price string to float
 def price_str_to_float(s):
     s = s.replace('"', '')
     s = s.replace('.', '').replace(',', '.')
     return float(s)
 
+# Function to save DataFrame to CSV file
 def save(df: pd.DataFrame, filename: str):
     df_copy = df.reset_index()
     df_copy.to_csv(filename, index=False)
 
+# Function to get a list of symbols from a file
 def get_symbols():
     codes = []
     with open('../shared/storage/codes.txt', 'r') as f:
@@ -36,8 +41,9 @@ def get_symbols():
     return codes
 
 # ---------------------------
-# RS
+# RSI (Relative Strength Index)
 # ---------------------------
+
 def rsi(df: pd.DataFrame, rsi_period=14) -> pd.DataFrame:
     rsi_indicator = RSIIndicator(close=df['Close'], window=rsi_period)
     df['RSI'] = rsi_indicator.rsi()
@@ -56,8 +62,9 @@ def rsi_indicator(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # ---------------------------
-# Stochastic
+# Stochastic Oscillator
 # ---------------------------
+
 def stochastic(df: pd.DataFrame, k_window=14, d_window=3, smooth_window=3) -> pd.DataFrame:
     stoch = StochasticOscillator(high=df['Max'], low=df['Min'], close=df['Close'],
                                  window=k_window, smooth_window=smooth_window)
@@ -80,6 +87,7 @@ def stochastic_indicator(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------
 # Williams %R
 # ---------------------------
+
 def williams_r(df: pd.DataFrame, lbp=14) -> pd.DataFrame:
     willr = WilliamsRIndicator(high=df['Max'], low=df['Min'], close=df['Close'], lbp=lbp)
     df['WilliamsR'] = willr.williams_r()
@@ -98,8 +106,9 @@ def williams_r_indicator(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # ---------------------------
-# CCI
+# CCI (Commodity Channel Index)
 # ---------------------------
+
 def cci(df: pd.DataFrame, cci_period=20) -> pd.DataFrame:
     cci_ind = CCIIndicator(high=df['Max'], low=df['Min'], close=df['Close'], window=cci_period)
     df['CCI'] = cci_ind.cci()
@@ -118,8 +127,9 @@ def cci_indicator(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # ---------------------------
-# MFI
+# MFI (Money Flow Index)
 # ---------------------------
+
 def mfi(df: pd.DataFrame, mfi_period=14) -> pd.DataFrame:
     mfi_ind = MFIIndicator(high=df['Max'], low=df['Min'], close=df['Close'], volume=df['Volume'], window=mfi_period)
     df['MFI'] = mfi_ind.money_flow_index()
@@ -156,7 +166,6 @@ def wma(df: pd.DataFrame, window=14) -> pd.DataFrame:
     df['WMA'] = wma_ind.wma()
     return df
 
-
 def get_ma_signal(price, ma_value):
     if pd.isna(ma_value):
         return "HOLD"
@@ -168,15 +177,15 @@ def get_ma_signal(price, ma_value):
         return "HOLD"
 
 def ma_indicators(df: pd.DataFrame) -> pd.DataFrame:
-    # For each MA, create a signal column
     df['SMA_Signal'] = df.apply(lambda row: get_ma_signal(row['Close'], row['SMA']), axis=1)
     df['EMA_Signal'] = df.apply(lambda row: get_ma_signal(row['Close'], row['EMA']), axis=1)
     df['WMA_Signal'] = df.apply(lambda row: get_ma_signal(row['Close'], row['WMA']), axis=1)
     return df
 
 # ---------------------------
-# Resampling
+# Resampling DataFrame
 # ---------------------------
+
 def resample_df(df: pd.DataFrame, timeframe: int) -> pd.DataFrame:
     if not isinstance(df.index, pd.DatetimeIndex):
         raise ValueError("DataFrame index must be a DatetimeIndex before resampling.")
@@ -205,6 +214,7 @@ def resample_df(df: pd.DataFrame, timeframe: int) -> pd.DataFrame:
 # ---------------------------
 # Main Execution
 # ---------------------------
+
 if __name__ == '__main__':
     symbols = get_symbols()
     timeframes = [1, 7, 30]

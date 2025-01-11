@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# Define column mappings for each indicator
+# Define column mappings for each indicator (for output renaming)
 INDICATOR_COLUMNS = {
     "rsi": ["Date", "Close", "Max", "Min", "Volume", "RSI", "RSI_Signal"],
     "stoch": ["Date", "Close", "Max", "Min", "Volume", "Stoch_K", "Stoch_D", "Stoch_Signal"],
@@ -36,8 +36,36 @@ def get_filtered_data(issuer, indicator, frequency=None, limit=None, offset=None
             file_path = os.path.join(folder_path, filename)
             try:
                 # Read the CSV file and filter columns
-                df = pd.read_csv(file_path, usecols=lambda col: col in indicator_columns)
+                df = pd.read_csv(file_path)
+                print(f"Original columns in file '{filename}': {df.columns}")  # Debug: Check original columns
+
+                # Filter columns for the indicator
+                df = df[[col for col in df.columns if col in indicator_columns]]
+                print(f"Filtered columns in file '{filename}': {df.columns}")  # Debug: Check filtered columns
+
                 df["file"] = filename  # Add the filename for context
+
+                # Rename columns for output to generic names
+                if indicator == "rsi":
+                    df = df.rename(columns={"RSI": "Indicator", "RSI_Signal": "Signal"})
+                elif indicator == "stoch":
+                    df = df.rename(columns={
+                        "Stoch_K": "Indicator",
+                        "Stoch_D": "Signal",  # Renaming Stoch_D to Signal
+                        "Stoch_Signal": "Signal"  # Renaming Stoch_Signal to Signal
+                    })
+                elif indicator == "williamsr":
+                    df = df.rename(columns={"WilliamsR": "Indicator", "WilliamsR_Signal": "Signal"})
+                elif indicator == "cci":
+                    df = df.rename(columns={"CCI": "Indicator", "CCI_Signal": "Signal"})
+                elif indicator == "mfi":
+                    df = df.rename(columns={"MFI": "Indicator", "MFI_Signal": "Signal"})
+
+                print(f"Renamed columns in file '{filename}': {df.columns}")  # Debug: Check renamed columns
+
+                # Replace NaN values with None (to return actual JSON null)
+                df = df.where(pd.notnull(df), None)
+
                 result.extend(df.to_dict(orient="records"))
             except Exception as e:
                 raise ValueError(f"Error reading file '{filename}': {e}")
@@ -69,7 +97,7 @@ def get_indicator_values(issuer, indicator):
         data = get_filtered_data(issuer, indicator, frequency, limit, offset)
         if not data:
             return jsonify({
-                               "error": f"No data found for indicator '{indicator}' for issuer '{issuer}' with frequency '{frequency}'"}), 404
+                "error": f"No data found for indicator '{indicator}' for issuer '{issuer}' with frequency '{frequency}'"}), 404
         return jsonify(data)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -78,4 +106,5 @@ def get_indicator_values(issuer, indicator):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = os.getenv("PORT", 5000)
+    app.run(debug=True, host='0.0.0.0', port=port)
