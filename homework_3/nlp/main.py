@@ -13,11 +13,18 @@ print("CUDA available:", torch.cuda.is_available())
 # Initialize the sentiment analysis pipeline
 pipe = pipeline("text-classification", model="mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
 
-def analyze(sentence):
-    result = pipe(sentence)[0]  # Analyze a single sentence
-    return {"sentence": sentence, "sentiment": result['label'], "score": result['score']}
+def analyze(news):
+    result_list = []
+    for new in news:
+        result = pipe(new)
+        result_list.append({
+            "news": new,
+            "sentiment": result[0]['label'],
+            "score": result[0]['score']
+        })
+    return result_list
 
-@app.route("/sentiment", methods=["POST"])
+@app.route("/analyze-sentiment", methods=["POST"])
 def analyze_sentiment():
     try:
         # Extract data from the request
@@ -25,14 +32,14 @@ def analyze_sentiment():
         if not data or "text" not in data:
             return jsonify({"error": "Please provide a 'text' field in JSON payload"}), 400
 
-        # Get the sentence
+        # Ensure the input is a list
         text = data["text"]
-        if not isinstance(text, str):
-            return jsonify({"error": "'text' field must be a single string"}), 400
+        if not isinstance(text, list):
+            text = [text]
 
         # Perform sentiment analysis
         result = analyze(text)
-        return jsonify(result), 200
+        return jsonify({"results": result}), 200
 
     except Exception as e:
         print(f"Error: {e}")

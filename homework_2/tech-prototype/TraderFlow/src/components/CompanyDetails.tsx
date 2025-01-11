@@ -18,7 +18,7 @@ const CompanyDetails = () => {
             console.log(`Fetching data for company: ${companyId}`);
 
             // Fetch company data from the Flask API
-            const response = await fetch(`http://localhost:8080/api/companies/${companyId}/price-history`);
+            const response = await fetch(`http://localhost:8082/api/companies/${companyId}/price-history`);
             console.log(`Response status: ${response.status}`);
 
             if (!response.ok) {
@@ -42,7 +42,7 @@ const CompanyDetails = () => {
             console.log(`Fetching data for company: ${companyId}`);
 
             // Fetch company data from the Flask API
-            const response = await fetch(`http://localhost:8080/api/companies/${companyId}/predict`);
+            const response = await fetch(`http://localhost:8082/api/companies/${companyId}/predict`);
             console.log(`Response status: ${response.status}`);
 
             if (!response.ok) {
@@ -67,7 +67,7 @@ const CompanyDetails = () => {
             console.log(`Fetching data for company: ${companyId}`);
 
             // Fetch company data from the Flask API
-            const response = await fetch(`http://localhost:8080/api/companies/${companyId}/news/sentiment`);
+            const response = await fetch(`http://localhost:8082/api/companies/${companyId}/news/sentiment`);
             console.log(`Response status: ${response.status}`);
 
             if (!response.ok) {

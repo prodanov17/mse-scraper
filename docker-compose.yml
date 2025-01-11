@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  news-scraper:
+    build:
+      context: ./homework_3/news-scraper
+    ports:
+      - "5013:5000"
+    volumes:
+      - ./homework_3/news-scraper:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - mse-scraper-network
+
+  nlp:
+    build:
+      context: homework_3/nlp
+    ports:
+      - "5014:5000"
+    volumes:
+      - ./homework_3/nlp:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - mse-scraper-network
+  indicators:
+    build:
+      context: homework_3/indicators-service
+    ports:
+      - "5007:5000"
+    volumes:
+      - ./homework_3/indicators-service:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - mse-scraper-network
+  prediction:
+    build:
+      context: homework_3/lstm
+    ports:
+      - "5006:5000"
+    volumes:
+      - ./homework_3/lstm:/app
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - mse-scraper-network
+  mse-api:
+    build:
+      context: homework_2/tech-prototype/mse-api
+    container_name: mse-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/mse?autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8082:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mse-scraper-network
+#  db:
+#    image: mysql:5.7
+#    restart: unless-stopped
+#    environment:
+#      MYSQL_DATABASE: 'mse-api'
+#      MYSQL_USER: 'root'
+#      MYSQL_PASSWORD: 'root'
+#      MYSQL_ROOT_PASSWORD: 'root'
+#    ports:
+#      - '3306:3306'
+#    volumes:
+#      - my-db:/var/lib/mysql
+#    networks:
+#      - mse-scraper-network
+volumes:
+  my-db:
+
+networks:
+  mse-scraper-network:
+    driver: bridge

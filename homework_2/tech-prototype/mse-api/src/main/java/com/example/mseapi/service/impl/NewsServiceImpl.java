@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class NewsServiceImpl implements NewsService {
 
-    private static final String FLASK_API_URL = "http://localhost:5003/news/{key}/sentiment";
+    private static final String FLASK_API_URL = "http://news-scraper:5000/news/{key}/sentiment";
 
     @Autowired
     private RestTemplate restTemplate;

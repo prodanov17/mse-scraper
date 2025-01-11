@@ -10,7 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class PredictionServiceImpl implements PredictionService {
-    private static final String PREDICTION_API_BASE_URL = "http://localhost:5002/predict";
+    private static final String PREDICTION_API_BASE_URL = "http://prediction:5000/predict";
 
     private final RestTemplate restTemplate;
     public PredictionServiceImpl(RestTemplate restTemplate) {

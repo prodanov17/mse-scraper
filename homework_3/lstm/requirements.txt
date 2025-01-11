@@ -1,0 +1,5 @@
+Flask                # Flask for creating web applications
+pandas              # pandas for data manipulation
+numpy              # numpy for numerical computations
+scikit-learn         # scikit-learn for MinMaxScaler and other preprocessing
+tensorflow          # TensorFlow for loading and using deep learning models

@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 import os
-import math
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -19,7 +18,7 @@ app = Flask(__name__)
 # Function to predict the next day's price for a given symbol
 def predict_next_day(symbol):
     model_path = f"models/{symbol}.h5"  # Path to the trained model for the symbol
-    data_path = f"../indicators/{symbol}_oscillators_ma_1.csv"  # Path to the CSV data for the symbol
+    data_path = f"indicators/{symbol}_oscillators_ma_1.csv"  # Path to the CSV data for the symbol
 
     # Check if model file exists
     if not os.path.exists(model_path):
@@ -89,4 +88,5 @@ def predict():
 
 # Start the Flask app
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)  # Run the app on port 5002
+    port = os.getenv("PORT", 5000)
+    app.run(debug=True, host='0.0.0.0', port=port)
