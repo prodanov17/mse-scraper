@@ -1,10 +1,11 @@
+import os
+
 from flask import Flask, jsonify, request
 import re
 import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 import statistics
-from homework_3.nlp import analyze  # Assuming sentiment analysis function is here
 
 app = Flask(__name__)
 
@@ -57,6 +58,9 @@ class NewsScraper:
             return {"error": str(e)}
 
 scraper = NewsScraper()
+
+def analyze(news_contents):
+    requests.post("http://nlp:5000/sentiment", json={"text": news_contents})
 
 def analyze_sentiment(news_contents):
     # Assuming the analyze function processes the contents and returns sentiment analysis results
@@ -112,4 +116,5 @@ def get_news_sentiment(issuer):
     })
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    port = os.getenv("PORT", 5000)
+    app.run(debug=True, host='0.0.0.0', port=port)
