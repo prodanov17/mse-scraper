@@ -18,7 +18,7 @@ app = Flask(__name__)
 # Function to predict the next day's price for a given symbol
 def predict_next_day(symbol):
     model_path = f"models/{symbol}.h5"  # Path to the trained model for the symbol
-    data_path = f"indicators/{symbol}_oscillators_ma_1.csv"  # Path to the CSV data for the symbol
+    data_path = f"../indicators/{symbol}_oscillators_ma_1.csv"  # Path to the CSV data for the symbol
 
     # Check if model file exists
     if not os.path.exists(model_path):
