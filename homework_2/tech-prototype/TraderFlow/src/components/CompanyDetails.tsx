@@ -1,42 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { Company, PricePrediction, Sentiment } from '../utilities/types';
+import ApiError from '../utilities/apierror';
+import api from '../utilities/fetching';
+import StockData from './StockData';
 
 const CompanyDetails = () => {
     const { companyId } = useParams(); // Get companyKey from URL params
     const [darkMode, setDarkMode] = useState(false);
-    const [companyDetails, setCompanyDetails] = useState(null); // State to hold company details
+    const [companyDetails, setCompanyDetails] = useState<Company | null>(null); // State to hold company details
     const [loading, setLoading] = useState(true); // State for loading
-    const [error, setError] = useState(null); // State for error handling
-    const [sentiment, setSentiment] = useState(null);
-    const [predictedPrice, setPredictedPrice] = useState(null);
-    const [priceError, setPriceError] = useState(null);
-    const [sentimentError, setSentimentError] = useState(null);
+    const [error, setError] = useState<ApiError | null>(null); // State for error handling
+    const [sentiment, setSentiment] = useState<Sentiment | null>(null);
+    const [predictedPrice, setPredictedPrice] = useState<PricePrediction | null>(null);
+    const [priceError, setPriceError] = useState<ApiError | null>(null);
+    const [sentimentError, setSentimentError] = useState<ApiError | null>(null);
 
-    const fetchCompanyDetails = async () => {
+    const fetchCompanyDetails = useCallback(async () => {
         try {
             setLoading(true); // Start loading
-            console.log(`Fetching data for company: ${companyId}`);
 
             // Fetch company data from the Flask API
-            const response = await fetch(`http://localhost:8082/api/companies/${companyId}/price-history`);
-            console.log(`Response status: ${response.status}`);
+            const response = await api.get(`companies/${companyId}/price-history`) as Company;
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch company details');
-            }
-
-            const data = await response.json();
-            setCompanyDetails(data);
-            console.log(data);
+            setCompanyDetails(response);
         } catch (err) {
-            setError(err.message || 'Failed to load company details');
-            console.error('Error fetching company details:', err);
+            if (err instanceof Error) {
+                setError(new ApiError(500, err.message, 'Failed to fetch company details'));
+            }
         } finally {
             setLoading(false); // Stop loading
         }
-    };
+    }, [companyId]);
 
-    const fetchPrice = async () => {
+    const fetchPrice = useCallback(async () => {
         try {
             setLoading(true); // Start loading
             console.log(`Fetching data for company: ${companyId}`);
@@ -53,15 +50,17 @@ const CompanyDetails = () => {
             setPredictedPrice(data);
             console.log(data);
         } catch (err) {
-            setPriceError(err.message || 'No price found');
+            if (err instanceof Error) {
+                setPriceError(new ApiError(500, err.message, 'Failed to fetch company details'));
+            }
             console.error('Error fetching company details:', err);
         } finally {
             setLoading(false); // Stop loading
         }
 
-    }
+    }, [companyId]);
 
-    const fetchSentiment = async () => {
+    const fetchSentiment = useCallback(async () => {
         try {
             setLoading(true); // Start loading
             console.log(`Fetching data for company: ${companyId}`);
@@ -78,13 +77,15 @@ const CompanyDetails = () => {
             setSentiment(data);
             console.log(data);
         } catch (err) {
-            setSentimentError(err.message || 'No sentiment found');
+            if (err instanceof Error) {
+                setSentimentError(new ApiError(500, err.message, 'Failed to fetch company details'));
+            }
             console.error('Error fetching company details:', err);
         } finally {
             setLoading(false); // Stop loading
         }
 
-    }
+    }, [companyId]);
 
     // Fetch company details when component mounts or companyKey changes
     useEffect(() => {
@@ -99,7 +100,7 @@ const CompanyDetails = () => {
         fetchCompanyDetails();
         fetchSentiment();
         fetchPrice();
-    }, [companyId]); // Rerun the effect when companyKey changes
+    }, [companyId, fetchCompanyDetails, fetchSentiment, fetchPrice]);
 
 
     // Toggle dark mode and save the preference to localStorage
@@ -117,7 +118,7 @@ const CompanyDetails = () => {
     };
 
     // Display a default sentiment color (if no sentiment is provided)
-    const sentimentColor = (sentiment) => {
+    const sentimentColor = (sentiment: string) => {
         switch (sentiment) {
             case 'positive':
                 return 'text-green-500'; // Green for positive
@@ -135,7 +136,7 @@ const CompanyDetails = () => {
     }
 
     if (error) {
-        return <div>{error}</div>; // Show error message if there's an error
+        return <div>{error.message}</div>; // Show error message if there's an error
     }
 
     return (
@@ -155,7 +156,7 @@ const CompanyDetails = () => {
                 <div className={`p-6 rounded-lg shadow-md ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} transition-all duration-300`}>
                     {companyDetails ? (
                         <>
-                            <p className="text-xl mb-4">Details for company: {companyDetails.company_key}</p>
+                            <p className="text-xl mb-4">Details for company: {companyDetails.short_name}</p>
                             <p className="text-lg">Price: {companyDetails.price} mkd.</p>
                             <p className="text-lg">
                                 Sentiment: {' '}
@@ -176,40 +177,10 @@ const CompanyDetails = () => {
                             </p>
 
 
-                            {/* Stock History */}
-                            <h2 className="text-2xl mt-6 mb-4">Stock History</h2>
-                            {companyDetails.stock_data && companyDetails.stock_data.content && companyDetails.stock_data.content.length > 0 ? (
-                                <table className="table-auto w-full text-sm text-left">
-                                    <thead className="border-b">
-                                        <tr>
-                                            <th className="px-4 py-2">Date</th>
-                                            <th className="px-4 py-2">Last Trade Price</th>
-                                            <th className="px-4 py-2">Max</th>
-                                            <th className="px-4 py-2">Min</th>
-                                            <th className="px-4 py-2">Avg.</th>
-                                            <th className="px-4 py-2">Price % Chg.</th>
-                                            <th className="px-4 py-2">Volume</th>
-                                            <th className="px-4 py-2">Turnover in BEST (Denars)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {companyDetails.stock_data.content.map((entry, index) => (
-                                            <tr key={index} className="border-b">
-                                                <td className="px-4 py-2">{entry.date}</td>
-                                                <td className="px-4 py-2">{entry.price.toFixed(2)}</td>
-                                                <td className="px-4 py-2">{entry.max.toFixed(2)}</td>
-                                                <td className="px-4 py-2">{entry.min.toFixed(2)}</td>
-                                                <td className="px-4 py-2">{entry.average_price.toFixed(2)}</td>
-                                                <td className="px-4 py-2">{entry.price_change.toFixed(2)}%</td>
-                                                <td className="px-4 py-2">{entry.volume}</td>
-                                                <td className="px-4 py-2">{entry.best_turnover.toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <p>No stock history available</p>
-                            )}
+                            {/* Display tab groups */}
+                            {/* If tab is price history - display StockData */}
+                            {/* If tab is indicators - display Indicators */}
+                            {companyDetails && <StockData stockData={companyDetails.stock_data || null} />}
                         </>
                     ) : (
                         <p>No details available</p>

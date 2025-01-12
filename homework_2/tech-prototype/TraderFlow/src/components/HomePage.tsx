@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
-export interface Company {
-    short_name: string;
-    name: string;
-    price: number;
-    price_change: number;
-}
+import { Company } from '../utilities/types';
+import ApiError from '../utilities/apierror';
 
 const HomePage: React.FC = () => {
     const [darkMode, setDarkMode] = useState(false);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<unknown | null>(null);
+    const [error, setError] = useState<ApiError | null>(null);
 
     // Toggle dark mode
     const toggleDarkMode = () => {
@@ -35,8 +30,10 @@ const HomePage: React.FC = () => {
 
             const companies = data.filter(company => company.price !== null);
             setCompanies(companies);
-        } catch (error: unknown) {
-            setError(error);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(new ApiError(500, error.message, 'Failed to fetch companies'));
+            }
         } finally {
             setLoading(false);
         }

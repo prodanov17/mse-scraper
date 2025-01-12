@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 
 @Data
 public class StockDataDTO {
-    private String companyKey;
+    private String short_name;
     private String name;
     private Double price;
     private Page<StockData> stockData;
