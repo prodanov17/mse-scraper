@@ -86,7 +86,7 @@ public class CompanyServiceImpl implements CompanyService {
             price = stockData.getContent().get(0).getPrice();
 
         StockDataDTO dto = new StockDataDTO();
-        dto.setCompanyKey(company.get().getCompanyKey());
+        dto.setShortName(company.get().getCompanyKey());
         dto.setName(company.get().getName());
         dto.setPrice(price);
         dto.setStockData(stockData);

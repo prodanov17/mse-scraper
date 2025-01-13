@@ -4,6 +4,7 @@ import com.example.mseapi.dto.CompanyPredictionsDTO;
 import com.example.mseapi.service.PredictionService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -18,6 +19,7 @@ public class PredictionServiceImpl implements PredictionService {
     }
 
     @Override
+    @Cacheable("predictions")
     public CompanyPredictionsDTO getCompanyPrediction(String key) {
         String url = UriComponentsBuilder.fromHttpUrl(PREDICTION_API_BASE_URL)
                 .queryParam("symbol", key)

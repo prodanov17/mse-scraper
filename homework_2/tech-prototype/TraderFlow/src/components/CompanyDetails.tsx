@@ -1,8 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Company } from '../utilities/types';
+import { Company, Page, PricePrediction, Sentiment, StockData } from '../utilities/types';
 import ApiError from '../utilities/apierror';
 import Indicators from './Indicators';
+import api from '../utilities/fetching';
+import StockDataTable from './StockData';
+
+const sentimentColor = (sentiment: string) => {
+    switch (sentiment) {
+        case 'positive':
+            return 'text-green-500'; // Green for positive
+        case 'negative':
+            return 'text-red-500'; // Red for negative
+        case 'neutral':
+            return 'text-blue-500'; // Blue for neutral
+        default:
+            return 'text-gray-500'; // Default gray if no sentiment
+    }
+};
+
 
 const CompanyDetails = () => {
     const { companyId } = useParams();
@@ -10,16 +26,17 @@ const CompanyDetails = () => {
     const [companyDetails, setCompanyDetails] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<ApiError | null>(null);
-    const [priceHistory, setPriceHistory] = useState<any[]>([]);
+    const [priceHistory, setPriceHistory] = useState<Page<StockData> | null>(null);
+    const [sentiment, setSentiment] = useState<Sentiment | null>(null);
+    const [predictedPrice, setPredictedPrice] = useState<PricePrediction | null>(null);
+
     const [activeTab, setActiveTab] = useState<'history' | 'indicators'>('history');
 
     const fetchCompanyDetails = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:5000/api/companies/${companyId}`);
-            if (!response.ok) throw new Error('Failed to fetch company details');
-            const data = await response.json();
-            setCompanyDetails(data);
+            const response = await api.get(`companies/${companyId}`) as Company;
+            setCompanyDetails(response);
         } catch (err) {
             if (err instanceof Error) {
                 setError(new ApiError(500, err.message, 'Failed to fetch company details'));
@@ -32,10 +49,8 @@ const CompanyDetails = () => {
     const fetchStockData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:5000/api/companies/${companyId}/stock-data`);
-            if (!response.ok) throw new Error('Failed to fetch stock data');
-            const data = await response.json();
-            setPriceHistory(data.content);
+            const response = await api.get(`companies/${companyId}/price-history`) as { stock_data: Page<StockData> };
+            setPriceHistory(response.stock_data);
         } catch (err) {
             if (err instanceof Error) {
                 setError(new ApiError(500, err.message, 'Failed to fetch stock data'));
@@ -45,10 +60,45 @@ const CompanyDetails = () => {
         }
     }, [companyId]);
 
+    const fetchPrice = useCallback(async () => {
+        try {
+            setLoading(true); // Start loading
+
+            // Fetch company data from the Flask API
+            const response = await api.get(`companies/${companyId}/predict`) as PricePrediction;
+
+            setPredictedPrice(response);
+        } catch (err) {
+            console.error('Error fetching company details:', err);
+        } finally {
+            setLoading(false); // Stop loading
+        }
+
+    }, [companyId]);
+
+    const fetchSentiment = useCallback(async () => {
+        try {
+            setLoading(true); // Start loading
+
+            // Fetch company data from the Flask API
+            const response = await api.get(`companies/${companyId}/news/sentiment`) as Sentiment;
+
+            setSentiment(response);
+        } catch (err) {
+            console.error('Error fetching company details:', err);
+        } finally {
+            setLoading(false); // Stop loading
+        }
+
+    }, [companyId]);
+
+
     useEffect(() => {
         fetchCompanyDetails();
         fetchStockData();
-    }, [companyId, fetchCompanyDetails, fetchStockData]);
+        fetchPrice();
+        fetchSentiment();
+    }, [companyId, fetchCompanyDetails, fetchStockData, fetchPrice, fetchSentiment]);
 
     const toggleDarkMode = () => {
         setDarkMode(prevMode => {
@@ -58,38 +108,6 @@ const CompanyDetails = () => {
             return newMode;
         });
     };
-
-    const renderPriceHistory = () => (
-        <>
-            <h2 className="text-2xl mt-4 font-semibold">Stock History</h2>
-            <table className={`min-w-full table-auto border border-gray-300 rounded-lg overflow-hidden ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} overflow-hidden`}>
-                <thead>
-                    <tr className={`${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                        <th className="border px-4 py-2">Date</th>
-                        <th className="border px-4 py-2">Close</th>
-                        <th className="border px-4 py-2">Min</th>
-                        <th className="border px-4 py-2">Max</th>
-                        <th className="border px-4 py-2">Volume</th>
-                        <th className="border px-4 py-2">Signal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {priceHistory.map((item, index) => (
-                        <tr key={index} className="text-center">
-                            <td className="border px-4 py-2">{item.date}</td>
-                            <td className="border px-4 py-2">{item.price} mkd</td>
-                            <td className="border px-4 py-2">{item.min} mkd</td>
-                            <td className="border px-4 py-2">{item.max} mkd</td>
-                            <td className="border px-4 py-2">{item.volume}</td>
-                            <td className={`border px-4 py-2 ${item.signal === 'buy' ? 'text-green-500' : item.signal === 'sell' ? 'text-red-500' : 'text-yellow-500'}`}>
-                                {item.signal}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </>
-    );
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-red-500">{error.message}</div>;
@@ -111,6 +129,27 @@ const CompanyDetails = () => {
                     {companyDetails ? (
                         <>
                             <p className="text-xl mb-4">Details for company: {companyDetails.short_name}</p>
+                            <p className="">Price: {companyDetails.price} mkd.</p>
+                            <p className="mb-4">Price change: {companyDetails.price_change.toFixed(2)}%</p>
+                            <p className="text-lg">
+                                Sentiment: {' '}
+                                {!sentiment
+                                    ? "N/A"
+                                    : sentiment
+                                        ? <span className={sentimentColor(sentiment.sentiment)}>{sentiment.sentiment}</span>
+                                        : "Loading..."}
+                            </p>
+
+                            <p className="text-lg">
+                                Predicted Price:{' '}
+                                {!predictedPrice
+                                    ? "N/A"
+                                    : predictedPrice
+                                        ? `${predictedPrice.prediction.toFixed(2)} mkd.`
+                                        : "Loading..."}
+                            </p>
+
+
 
                             {/* Tab Buttons */}
                             <div className="flex mb-4">
@@ -129,7 +168,7 @@ const CompanyDetails = () => {
                             </div>
 
                             {/* Render content based on active tab */}
-                            {activeTab === 'history' ? renderPriceHistory() : <Indicators companyId={companyId} darkMode={darkMode} />}
+                            {activeTab === 'history' ? <StockDataTable stockData={priceHistory} /> : <Indicators companyId={companyId || ""} darkMode={darkMode} />}
                         </>
                     ) : (
                         <p>No details available</p>

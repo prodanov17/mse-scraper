@@ -1,11 +1,9 @@
 package com.example.mseapi.controller;
 
-import com.example.mseapi.dto.CompanyDTO;
-import com.example.mseapi.dto.CompanyPredictionsDTO;
-import com.example.mseapi.dto.NewsSentimentDTO;
-import com.example.mseapi.dto.StockDataDTO;
+import com.example.mseapi.dto.*;
 import com.example.mseapi.model.Company;
 import com.example.mseapi.service.CompanyService;
+import com.example.mseapi.service.IndicatorService;
 import com.example.mseapi.service.NewsService;
 import com.example.mseapi.service.PredictionService;
 import com.example.mseapi.service.impl.CompanyServiceImpl;
@@ -26,6 +24,9 @@ public class CompanyController {
 
     @Autowired
     private PredictionService predictionService;
+
+    @Autowired
+    private IndicatorService indicatorService;
 
 
     @Autowired
@@ -65,5 +66,10 @@ public class CompanyController {
     @GetMapping("/{key}/predict")
     public CompanyPredictionsDTO getCompanyPrediction(@PathVariable String key) {
         return this.predictionService.getCompanyPrediction(key.toUpperCase());
+    }
+
+    @GetMapping("/{key}/indicators/{indicator}")
+    public List<IndicatorDTO> getCompanyIndicator(@PathVariable String key, @PathVariable String indicator) {
+        return this.indicatorService.getIndicators(key.toUpperCase(), indicator);
     }
 }

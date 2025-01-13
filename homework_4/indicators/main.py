@@ -51,6 +51,9 @@ def get_filtered_data(issuer, indicator, frequency=None, limit=None, offset=None
             try:
                 df = pd.read_csv(file_path)  # Read the CSV file into a DataFrame
 
+                #reverse the df
+                df = df[::-1]
+
                 # Ensure required columns are present in the file
                 missing_columns = [col for col in indicator_columns if col not in df.columns]
                 if missing_columns:
@@ -61,24 +64,28 @@ def get_filtered_data(issuer, indicator, frequency=None, limit=None, offset=None
 
                 # Rename columns for output to a consistent format based on the indicator
                 if indicator == "rsi":
-                    df = df.rename(columns={"RSI": "Indicator", "RSI_Signal": "Signal"})
+                    df = df.rename(columns={"RSI": "indicator", "RSI_Signal": "signal"})
                 elif indicator == "stoch":
-                    df = df.rename(columns={"Stoch_K": "Indicator", "Stoch_Signal": "Signal"})
+                    df = df.rename(columns={"Stoch_K": "indicator", "Stoch_Signal": "signal"})
                 elif indicator == "williamsr":
-                    df = df.rename(columns={"WilliamsR": "Indicator", "WilliamsR_Signal": "Signal"})
+                    df = df.rename(columns={"WilliamsR": "indicator", "WilliamsR_Signal": "signal"})
                 elif indicator == "cci":
-                    df = df.rename(columns={"CCI": "Indicator", "CCI_Signal": "Signal"})
+                    df = df.rename(columns={"CCI": "indicator", "CCI_Signal": "signal"})
                 elif indicator == "mfi":
-                    df = df.rename(columns={"MFI": "Indicator", "MFI_Signal": "Signal"})
+                    df = df.rename(columns={"MFI": "indicator", "MFI_Signal": "signal"})
                 elif indicator == "ema":
-                    df = df.rename(columns={"EMA": "Indicator", "EMA_Signal": "Signal"})
+                    df = df.rename(columns={"EMA": "indicator", "EMA_Signal": "signal"})
                 elif indicator == "sma":
-                    df = df.rename(columns={"SMA": "Indicator", "SMA_Signal": "Signal"})
+                    df = df.rename(columns={"SMA": "indicator", "SMA_Signal": "signal"})
                 elif indicator == "wma":
-                    df = df.rename(columns={"WMA": "Indicator", "WMA_Signal": "Signal"})
+                    df = df.rename(columns={"WMA": "indicator", "WMA_Signal": "signal"})
 
                 # Replace NaN values with None (null in JSON) for proper JSON serialization
-                df = df.where(pd.notnull(df), None)
+                df = df.replace([float('nan'), float('inf'), float('-inf')], None)
+
+                # Convert column names to lowercase for consistent output
+                df.columns = [col.lower() for col in df.columns]
+
 
                 # Add rows to the result list
                 result.extend(df.to_dict(orient="records"))

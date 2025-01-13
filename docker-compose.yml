@@ -8,6 +8,8 @@ services:
       - "5013:5000"
     volumes:
       - ./homework_4/news_scraper:/app
+    depends_on:
+      - nlp
     environment:
       - FLASK_ENV=development
     networks:
@@ -56,8 +58,26 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      - news-scraper
     ports:
       - "8082:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mse-scraper-network
+  dashboard:
+    container_name: trader-flow
+    build:
+      context: ./homework_2/tech-prototype/TraderFlow  # Path to your React app Dockerfile
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    depends_on:
+      - mse-api
+    env_file:
+      - ./homework_2/tech-prototype/TraderFlow/.env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

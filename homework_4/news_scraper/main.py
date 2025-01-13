@@ -91,6 +91,10 @@ def analyze(news_contents):
 
     # If the request was successful, return the response in JSON format (the sentiment analysis results)
     if response.status_code == 200:
+        result = response.json()
+
+        print("Analyze response:", result)  # Debug: Inspect response
+
         return response.json()  # This will be an array of results
     else:
         return {"error": "Failed to analyze sentiment", "status_code": response.status_code}
@@ -102,9 +106,13 @@ def analyze_sentiment(news_contents):
     :return: { sentiment: sentiment, score: score}
     """
     sentiment_results = analyze(news_contents)
-    if sentiment_results:
-        sentiment = statistics.mode([item['sentiment'] for item in sentiment_results])
-        score = sum(item['score'] for item in sentiment_results) / len(sentiment_results) if sentiment_results else 0
+    if 'results' in sentiment_results:
+        results = sentiment_results['results']
+
+        # Calculate the sentiment and average score
+        sentiment = statistics.mode([item['sentiment'] for item in results])
+        score = sum(item['score'] for item in results) / len(results) if results else 0
+
         return {
             "sentiment": sentiment,
             "score": score

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Company } from '../utilities/types';
 import ApiError from '../utilities/apierror';
+import api from '../utilities/fetching';
 
 const HomePage: React.FC = () => {
     const [darkMode, setDarkMode] = useState(false);
@@ -22,13 +23,9 @@ const HomePage: React.FC = () => {
     const fetchCompanies = async () => {
         setLoading(true)
         try {
-            const response = await fetch('http://localhost:8082/api/companies');
-            if (!response.ok) {
-                throw new Error('Failed to fetch companies');
-            }
-            const data = await response.json() as Company[];
+            const response = await api.get('companies') as Company[];
 
-            const companies = data.filter(company => company.price !== null);
+            const companies = response.filter(company => company.price !== null);
             setCompanies(companies);
         } catch (error) {
             if (error instanceof Error) {
