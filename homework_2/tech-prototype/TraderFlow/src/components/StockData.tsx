@@ -1,10 +1,14 @@
 import { Page, StockData as SData } from "../utilities/types";
 
-const StockDataTable = ({ stockData: stock_data }: { stockData: Page<SData> | null }) => {
+const StockDataTable = ({
+    stockData: stock_data,
+}: {
+    stockData: Page<SData> | null;
+}) => {
     return (
-        <>
+        <div className="bg-white rounded-lg p-4 overflow-hidden overflow-x-auto scroll-hidden">
             {/* Stock History */}
-            <h2 className="text-2xl mt-6 mb-4">Stock History</h2>
+            <h2 className="text-2xl mt6 mb-4">Stock History</h2>
             {stock_data && stock_data.content && stock_data.content.length > 0 ? (
                 <table className="table-auto w-full text-sm text-left">
                     <thead className="border-b">
@@ -38,8 +42,20 @@ const StockDataTable = ({ stockData: stock_data }: { stockData: Page<SData> | nu
                 <p>No stock history available</p>
             )}
 
-        </>
+        </div>
     );
 }
 
+// <button
+// onClick={() => changePage(false)}
+// className="bg-blue-500 text-white p-2 rounded-md focus:outline-none hover:bg-blue-700"
+// >
+// Previous
+// </button>
+// <button
+// onClick={() => changePage(true)}
+// className="bg-blue-500 text-white p-2 rounded-md focus:outline-none hover:bg-blue-700"
+// >
+// Next
+// </button>
 export default StockDataTable;

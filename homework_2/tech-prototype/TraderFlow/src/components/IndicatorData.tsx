@@ -14,7 +14,8 @@ const resolveSignalColor = (signal: string) => {
 
 const IndicatorData = ({ data: indicator_data }: { data: IData[] | null }) => {
     return (
-        <>
+        <div className="bg-white rounded-lg p-4 overflow-hidden overflow-x-auto scroll-hidden">
+
             <h2 className="text-2xl mt-6 mb-4">Stock</h2>
             {indicator_data && indicator_data.length > 0 ? (
                 <table className="table-auto w-full text-sm text-left">
@@ -47,7 +48,7 @@ const IndicatorData = ({ data: indicator_data }: { data: IData[] | null }) => {
                 <p>No stock history available</p>
             )}
 
-        </>
+        </div>
     );
 }
 
