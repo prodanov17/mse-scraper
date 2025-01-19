@@ -4,7 +4,6 @@ import api from "../utilities/fetching";
 import IndicatorData from "./IndicatorData";
 import ApiError from "../utilities/apierror";
 
-
 const Indicators = ({ companyId, darkMode }: { companyId: string; darkMode: boolean }) => {
     const [indicator, setIndicator] = useState('rsi'); // Default indicator
     const [indicatorData, setIndicatorData] = useState<IData[]>([]);
@@ -22,7 +21,6 @@ const Indicators = ({ companyId, darkMode }: { companyId: string; darkMode: bool
         }
     }, [companyId]);
 
-
     useEffect(() => {
         fetchIndicatorData(indicator);
     }, [indicator, companyId, fetchIndicatorData]);
@@ -39,9 +37,12 @@ const Indicators = ({ companyId, darkMode }: { companyId: string; darkMode: bool
     return (
         <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
             <h1 className="text-2xl mb-4">Indicators</h1>
-            <select onChange={(e) => {
-                setIndicator(e.target.value)
-            }} value={indicator} className={`mb-4 p-2 border rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-white text-gray-900'}`}>
+            
+            <select 
+                onChange={(e) => setIndicator(e.target.value)} 
+                value={indicator}
+                className={`mb-4 p-2 border rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-white text-gray-900'}`}
+            >
                 <option value="rsi">Relative Strength Index (RSI)</option>
                 <option value="stoch">Stochastic Oscillator</option>
                 <option value="williamsr">Williams %R</option>
@@ -53,11 +54,10 @@ const Indicators = ({ companyId, darkMode }: { companyId: string; darkMode: bool
             </select>
 
             {indicatorData && indicatorData.length > 0 ? (
-                <IndicatorData data={indicatorData} />
+                <IndicatorData data={indicatorData} darkMode={darkMode} />
             ) : (
                 <p>No indicator data available</p>
             )}
-
         </div>
     );
 };

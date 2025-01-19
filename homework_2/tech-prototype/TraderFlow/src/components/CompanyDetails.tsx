@@ -19,17 +19,15 @@ const sentimentColor = (sentiment: string) => {
     }
 };
 
-
 const CompanyDetails = () => {
     const { companyId } = useParams();
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState<boolean>(false);
     const [companyDetails, setCompanyDetails] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<ApiError | null>(null);
     const [priceHistory, setPriceHistory] = useState<Page<StockData> | null>(null);
     const [sentiment, setSentiment] = useState<Sentiment | null>(null);
     const [predictedPrice, setPredictedPrice] = useState<PricePrediction | null>(null);
-
     const [activeTab, setActiveTab] = useState<'history' | 'indicators'>('history');
 
     const fetchCompanyDetails = useCallback(async () => {
@@ -49,7 +47,7 @@ const CompanyDetails = () => {
     const fetchStockData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await api.get(`companies/${companyId}/price-history`) as { stock_data: Page<StockData> };
+            const response = await api.get(`companies/${companyId}/price-history?size=1000`) as { stock_data: Page<StockData> };
             setPriceHistory(response.stock_data);
         } catch (err) {
             if (err instanceof Error) {
@@ -62,38 +60,39 @@ const CompanyDetails = () => {
 
     const fetchPrice = useCallback(async () => {
         try {
-            setLoading(true); // Start loading
-
-            // Fetch company data from the Flask API
+            setLoading(true);
             const response = await api.get(`companies/${companyId}/predict`) as PricePrediction;
-
             setPredictedPrice(response);
         } catch (err) {
             console.error('Error fetching company details:', err);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
-
     }, [companyId]);
 
     const fetchSentiment = useCallback(async () => {
         try {
-            setLoading(true); // Start loading
-
-            // Fetch company data from the Flask API
+            setLoading(true);
             const response = await api.get(`companies/${companyId}/news/sentiment`) as Sentiment;
-
             setSentiment(response);
         } catch (err) {
             console.error('Error fetching company details:', err);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
-
     }, [companyId]);
 
-
     useEffect(() => {
+        // Check localStorage for dark mode preference
+        const storedDarkMode = localStorage.getItem('darkMode') === 'true';
+        setDarkMode(storedDarkMode);
+        if (storedDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Fetch necessary data
         fetchCompanyDetails();
         fetchStockData();
         fetchPrice();
@@ -149,8 +148,6 @@ const CompanyDetails = () => {
                                         : "Loading..."}
                             </p>
 
-
-
                             {/* Tab Buttons */}
                             <div className="flex mb-4">
                                 <button
@@ -168,7 +165,7 @@ const CompanyDetails = () => {
                             </div>
 
                             {/* Render content based on active tab */}
-                            {activeTab === 'history' ? <StockDataTable stockData={priceHistory} /> : <Indicators companyId={companyId || ""} darkMode={darkMode} />}
+                            {activeTab === 'history' ? <StockDataTable stockData={priceHistory} darkMode={darkMode} /> : <Indicators companyId={companyId || ""} darkMode={darkMode} />}
                         </>
                     ) : (
                         <p>No details available</p>
